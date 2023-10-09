@@ -1,7 +1,7 @@
 # serializers.py
-
+from django.contrib.messages.storage.cookie import MessageSerializer
 from rest_framework import serializers
-from .models import User
+from .models import User, Conversations, Messages
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'accountType']
         extra_kwargs = {
-           'password': {'write_only': True}
+            'password': {'write_only': True}
         }
 
     def create(self, validated_data):
@@ -19,4 +19,18 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Messages
+        fields = '__all__'
+
+
+class ConversationSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True, read_only=True)  # Include related messages
+
+    class Meta:
+        model = Conversations
+        fields = '__all__'
+
+
 

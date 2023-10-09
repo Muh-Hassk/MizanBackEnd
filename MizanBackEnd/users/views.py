@@ -84,6 +84,35 @@ class LogoutView(APIView):
         return response
 
 
+class CheckUsernameView(APIView):
+    def get(self, request, username):
+        # Check if the username is already taken in your database
+        username_exists = User.objects.filter(username=username).exists()
+
+        if username_exists:
+            data = {'available': False}
+        else:
+            data = {'available': True}
+
+        return Response(data)
+
+class CheckEmailView(APIView):
+    def get(self, request, email):
+        # Check if the email is already registered in your database
+        email_exists = User.objects.filter(email=email).exists()
+
+        if email_exists:
+            data = {'available': False}
+        else:
+            data = {'available': True}
+
+        return Response(data)
+
+
+
+
+
+
 class CreateConversationView(APIView): # needs To be Linked To User
     def post(self, request, name_content):
         # Limit the conversation name to the first 15 characters
@@ -172,7 +201,6 @@ class SendMessageView(APIView): # needs To be Linked To User
     def post(self, request):
         # Get the conversation_id from the request data
         conversation_id = request.data.get('conversation_id')
-
 
         # Check if the conversation exists
         try:

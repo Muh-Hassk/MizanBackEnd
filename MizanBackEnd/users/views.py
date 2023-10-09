@@ -173,6 +173,7 @@ class SendMessageView(APIView): # needs To be Linked To User
         # Get the conversation_id from the request data
         conversation_id = request.data.get('conversation_id')
 
+
         # Check if the conversation exists
         try:
             conversation = Conversations.objects.get(id=conversation_id)

@@ -15,6 +15,5 @@ urlpatterns = {
     path('get_conversation/<int:conversation_id>', GetConversationView.as_view()),
     path('get_conversations/', GetConversationsView.as_view()),
     path('delete_conversation/<int:conversation_id>/', DeleteConversationView.as_view()),
-    path('send_message', SendMessageView.as_view()),
-
+    path('send_message/<str:conversation_id>/', SendMessageView.as_view()),
 }

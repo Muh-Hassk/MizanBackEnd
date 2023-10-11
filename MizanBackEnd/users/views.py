@@ -38,15 +38,15 @@ class LoginView(APIView):
         }
 
         token = jwt.encode(payload, 'secret', algorithm='HS256')
-        # in Youtube Tutorial He Encoded the Token into utf-8
-        # i didn't do it but i got the Same Result.
+
 
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
+            'id': user.id,
+            'username': user.username,
             'jwt': token
         }
-
         return response
 
     class UserView(APIView):
@@ -117,14 +117,13 @@ class CreateConversationView(APIView): # needs To be Linked To User
     def post(self, request, name_content):
         # Limit the conversation name to the first 15 characters
         conversation_name = name_content[:15]
-
         # Get the authenticated user from the request
-        user = request.user
+
 
         # Create a new conversation with the specified name and user
         conversation_data = {
             'name': conversation_name,
-            'user': 18,
+            'user': user.id,
         }
         conversation_serializer = ConversationSerializer(data=conversation_data)
 
@@ -154,11 +153,26 @@ class CreateConversationView(APIView): # needs To be Linked To User
         else:
             return Response(conversation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class GetConversationView(APIView):
+
     def get(self, request, conversation_id):
+        # get The Authinticated User JWT
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('UnAuthenticated')
+
         try:
-            conversation = Conversations.objects.get(id=conversation_id)
-        except Conversations.DoesNotExist:
-            raise NotFound(detail="Conversation not found")
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('UnAuthenticated')
+
+
+        # Ensure the conversation belongs to the authenticated user
+        conversation = Conversations.objects.filter(user = User.objects.filter(id=payload['id']).first(), id=conversation_id).first()
+
+        if not conversation:
+            return Response({'error': 'Conversation not found or does not belong to the user.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Retrieve related messages for the specific conversation
         messages = conversation.messages_set.all()
@@ -168,13 +182,26 @@ class GetConversationView(APIView):
         serialized_messages = MessageSerializer(messages, many=True).data
         serialized_conversation['messages'] = serialized_messages
 
-        return Response(serialized_conversation)
-
+        return Response(serialized_conversation, status=status.HTTP_200_OK)
 
 class GetConversationsView(APIView):
     def get(self, request):
-        # Retrieve conversations and prefetch related messages
-        conversations = Conversations.objects.all().prefetch_related('messages_set')
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('UnAuthenticated')
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('UnAuthenticated')
+
+
+
+        # Retrieve conversations for the current user
+        conversations = Conversations.objects.filter(
+            user = User.objects.filter(id=payload['id']).first()).prefetch_related('messages_set')
 
         # Serialize the conversations with their related messages
         conversation_data = []
@@ -185,36 +212,73 @@ class GetConversationsView(APIView):
             serialized_conversation['messages'] = serialized_messages
             conversation_data.append(serialized_conversation)
 
-        return Response(conversation_data)
+        return Response(conversation_data, status=status.HTTP_200_OK)
 
 class DeleteConversationView(APIView):
+
+
     def delete(self, request, conversation_id):
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('UnAuthenticated')
+
         try:
-            conversation = Conversations.objects.get(id=conversation_id)
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('UnAuthenticated')
+
+        try:
+            # Ensure the conversation exists and belongs to the authenticated user
+            conversation = Conversations.objects.get(id=conversation_id,user = User.objects.filter(id=payload['id']).first() )
         except Conversations.DoesNotExist:
-            raise NotFound(detail="Conversation not found")
+            raise NotFound(detail="Conversation not found or does not belong to the user")
 
         conversation.delete()
         return Response(data={"detail": "Conversation Deleted Successfully"}, status=status.HTTP_204_NO_CONTENT)
 
-class SendMessageView(APIView): # needs To be Linked To User
-    def post(self, request):
-        # Get the conversation_id from the request data
-        conversation_id = request.data.get('conversation_id')
+class SendMessageView(APIView):
+
+    def post(self, request, conversation_id):
+        # Check if the user is authenticated
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('UnAuthenticated')
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('UnAuthenticated')
+
+        user = User.objects.filter(id=payload['id']).first()
+        message_content = request.data.get('content')
+
+        if conversation_id == "new":
+            # Create a new conversation and get its ID
+            new_conversation_data = {'user': User.objects.filter(id=payload['id']).first().id, 'name': message_content[:15]}
+            new_conversation_serializer = ConversationSerializer(data=new_conversation_data)
+
+            if new_conversation_serializer.is_valid():
+                new_conversation = new_conversation_serializer.save()
+                conversation_id = new_conversation.id
+            else:
+                return Response(new_conversation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the conversation exists
         try:
-            conversation = Conversations.objects.get(id=conversation_id)
+            conversation = Conversations.objects.get(id=conversation_id, user = User.objects.filter(id=payload['id']).first())
         except Conversations.DoesNotExist:
-            return Response({'error': 'Conversation not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Conversation not found or does not belong to the user."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Create a new message with the specified conversation
-        data = request.data.copy()
-        data['Conversations'] = conversation.id  # Assign the conversation to the message
-        serializer = MessageSerializer(data=data)
+        # Continue with the message creation
+        message_data = {'role': 'user', 'content': message_content, 'Conversations': conversation_id}
+        message_data['user'] = User.objects.filter(id=payload['id']).first()
+        message_serializer = MessageSerializer(data=message_data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if message_serializer.is_valid():
+            message_serializer.save()
+            return Response(message_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

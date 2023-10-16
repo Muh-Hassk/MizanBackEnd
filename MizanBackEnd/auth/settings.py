@@ -132,10 +132,10 @@ STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.User'
 
 
-# Allow all origins to access your API
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",  # or the URL of your Angular application
+]
 
-# Allow credentials (cookies, HTTP authentication) for cross-origin requests
 CORS_ALLOW_CREDENTIALS = True
 
 

@@ -279,6 +279,47 @@ class SendMessageView(APIView):
 
         if message_serializer.is_valid():
             message_serializer.save()
+            return Response(conversation_id, status=status.HTTP_201_CREATED)
+        else:
+            return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GetAIresponseView1(APIView):
+    def get(self, request):
+        content = request.data.get('content')  # Obtain the content from the request data
+        if content is not None:
+            AItext = f"This is the modified response: {content} with additional words."  # Modify the response
+            return Response({"AItext": AItext})  # Return the modified response in a JSON format
+        else:
+            return Response({"error": "Content not found in the request data"}, status=400)  # Return an error if content is not found
+
+
+class GetAIresponseView(APIView):
+
+    def post(self, request, conversation_id):
+        # Check if the user is authenticated
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('UnAuthenticated')
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('UnAuthenticated')
+
+        user = User.objects.filter(id=payload['id']).first()
+        message_content = request.data.get('content') + "This Being Modifyed By AI"
+
+
+
+
+        # Continue with the message creation
+        message_data = {'role': 'system', 'content': message_content, 'Conversations': conversation_id}
+        message_data['user'] = User.objects.filter(id=payload['id']).first()
+        message_serializer = MessageSerializer(data=message_data)
+
+        if message_serializer.is_valid():
+            message_serializer.save()
             return Response(message_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

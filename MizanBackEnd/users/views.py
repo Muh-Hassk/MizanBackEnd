@@ -2,10 +2,13 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed, NotFound
-from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSerializer, MessageSerializer, ConversationSerializer
 from .models import User, Conversations
 import jwt, datetime
+from .NLP_model import JusticeClassifier
+
+
+
 
 
 # Create your views here.
@@ -107,51 +110,6 @@ class CheckEmailView(APIView):
             data = {'available': True}
 
         return Response(data)
-
-
-
-
-
-
-class CreateConversationView(APIView): # needs To be Linked To User
-    def post(self, request, name_content):
-        # Limit the conversation name to the first 15 characters
-        conversation_name = name_content[:15]
-        # Get the authenticated user from the request
-
-
-        # Create a new conversation with the specified name and user
-        conversation_data = {
-            'name': conversation_name,
-            'user': user.id,
-        }
-        conversation_serializer = ConversationSerializer(data=conversation_data)
-
-        if conversation_serializer.is_valid():
-            conversation = conversation_serializer.save()
-
-            # Create a new message within the conversation
-            message_data = {
-                'role': 'user',
-                'content': name_content,
-                'Conversations': conversation.id,
-            }
-            message_serializer = MessageSerializer(data=message_data)
-
-            if message_serializer.is_valid():
-                message_serializer.save()
-
-                response_data = {
-                    'conversation': conversation_serializer.data,
-                    'message': message_serializer.data,
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                # Handle message creation error
-                conversation.delete()  # Rollback conversation creation
-                return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(conversation_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class GetConversationView(APIView):
 
     def get(self, request, conversation_id):
@@ -215,7 +173,6 @@ class GetConversationsView(APIView):
         return Response(conversation_data, status=status.HTTP_200_OK)
 
 class DeleteConversationView(APIView):
-
 
     def delete(self, request, conversation_id):
         token = request.COOKIES.get('jwt')
@@ -283,43 +240,50 @@ class SendMessageView(APIView):
         else:
             return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class GetAIresponseView1(APIView):
-    def get(self, request):
-        content = request.data.get('content')  # Obtain the content from the request data
-        if content is not None:
-            AItext = f"This is the modified response: {content} with additional words."  # Modify the response
-            return Response({"AItext": AItext})  # Return the modified response in a JSON format
-        else:
-            return Response({"error": "Content not found in the request data"}, status=400)  # Return an error if content is not found
+def CallModel(s):
+    Ax = s + "Response"
+    return Ax
+
 
 
 class GetAIresponseView(APIView):
-
     def post(self, request, conversation_id):
         # Check if the user is authenticated
         token = request.COOKIES.get('jwt')
 
         if not token:
-            raise AuthenticationFailed('UnAuthenticated')
+            raise AuthenticationFailed('Unauthenticated')
 
         try:
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('UnAuthenticated')
+            raise AuthenticationFailed('Unauthenticated')
 
         user = User.objects.filter(id=payload['id']).first()
-        message_content = request.data.get('content') + "This Being Modifyed By AI"
+        # Input for prediction
+        message_content = request.data.get('content')
 
+        # Load the model and make predictions
+        model = JusticeClassifier('/Users/muhammedhassan/Desktop/Mizan/MizanBackEnd/MizanBackEnd/users/npl_classifier.h5',
+                                  '/Users/muhammedhassan/Desktop/Mizan/MizanBackEnd/MizanBackEnd/users/tokenizer.pkl')
+        prediction = model.predict([message_content])
 
+        # Process the prediction result
+        if prediction == 1:
+            message_contentAIResponse = ' Based on My Training I see that the First Party is the Winner'
+        elif prediction == 0:
+            message_contentAIResponse = 'Based on My Training I see that the Second Party is the Winner'
 
-
-        # Continue with the message creation
-        message_data = {'role': 'system', 'content': message_content, 'Conversations': conversation_id}
+        # Save the message data
+        message_data = {
+            'role': 'system',
+            'content': message_contentAIResponse,
+            'Conversations': conversation_id
+        }
         message_data['user'] = User.objects.filter(id=payload['id']).first()
         message_serializer = MessageSerializer(data=message_data)
-
         if message_serializer.is_valid():
             message_serializer.save()
-            return Response(message_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(message_contentAIResponse, status=status.HTTP_200_OK)
         else:
             return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

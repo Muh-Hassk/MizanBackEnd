@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf544037-2743-4ea7-a3b9-d5d8ca50505e" name="Changes" comment="Finally Linked with AI">
+    <list default="true" id="cf544037-2743-4ea7-a3b9-d5d8ca50505e" name="Changes" comment="Making the Model only Response to Legal Cases">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MizanBackEnd/users/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/MizanBackEnd/users/views.py" afterDir="false" />
     </list>
@@ -64,7 +64,14 @@
       <option name="project" value="LOCAL" />
       <updated>1698094279278</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Making the Model only Response to Legal Cases">
+      <created>1698799007388</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1698799007388</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -80,6 +87,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Finally Linked with AI" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finally Linked with AI" />
+    <MESSAGE value="Making the Model only Response to Legal Cases" />
+    <option name="LAST_COMMIT_MESSAGE" value="Making the Model only Response to Legal Cases" />
   </component>
 </project>

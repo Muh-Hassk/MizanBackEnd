@@ -34,7 +34,7 @@ class JusticeClassifier:
             results.extend(batch_results)
         return results
 
-    def predict(self, text, confidence_threshold=0.91, max_legal_keywords=10 , min_legal_keywords = 2):
+    def predict(self, text, confidence_threshold=0.993, max_legal_keywords=25 , min_legal_keywords = 2):
         if isinstance(text, list):
             text = ' '.join(text)  # convert list to string
         text_lower = text.lower()
@@ -47,10 +47,11 @@ class JusticeClassifier:
             return 3
 
         sentiment = self.batch_predict([text])
+        print(sentiment)
         max_confidence = np.max(sentiment)
         print(max_confidence)
 
-        if max_confidence >= 0.9930829:
+        if max_confidence >= confidence_threshold:
             return 3
         elif np.argmax(sentiment) == 0:
             return 0

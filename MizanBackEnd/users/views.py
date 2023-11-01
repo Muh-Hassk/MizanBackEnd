@@ -267,12 +267,15 @@ class GetAIresponseView(APIView):
         model = JusticeClassifier('/Users/muhammedhassan/Desktop/Mizan/MizanBackEnd/MizanBackEnd/users/npl_classifier.h5',
                                   '/Users/muhammedhassan/Desktop/Mizan/MizanBackEnd/MizanBackEnd/users/tokenizer.pkl')
         prediction = model.predict([message_content])
+        print(prediction)
 
         # Process the prediction result
         if prediction == 1:
             message_contentAIResponse = ' Based on My Training I see that the First Party is the Winner'
         elif prediction == 0:
             message_contentAIResponse = 'Based on My Training I see that the Second Party is the Winner'
+        else:
+            message_contentAIResponse = 'That\'s not a Legal case please send me a Legal Case'
 
         # Save the message data
         message_data = {

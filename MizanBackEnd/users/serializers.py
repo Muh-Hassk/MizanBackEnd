@@ -1,7 +1,7 @@
 # serializers.py
 from django.contrib.messages.storage.cookie import MessageSerializer
 from rest_framework import serializers
-from .models import User, Conversations, Messages
+from .models import User, Conversations, Messages, notCase
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -32,5 +32,9 @@ class ConversationSerializer(serializers.ModelSerializer):
         model = Conversations
         fields = '__all__'
 
-
+class NotCaseSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True, read_only=True)  # Include related messages
+    class Meta:
+        model = notCase
+        fields = '__all__'
 

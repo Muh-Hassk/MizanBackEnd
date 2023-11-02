@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed, NotFound
-from .serializers import UserSerializer, MessageSerializer, ConversationSerializer
-from .models import User, Conversations
+from .serializers import UserSerializer, MessageSerializer, ConversationSerializer, NotCaseSerializer
+from .models import User, Conversations, notCase
 import jwt, datetime
 from .NLP_model import JusticeClassifier
 
@@ -240,13 +240,19 @@ class SendMessageView(APIView):
         else:
             return Response(message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def CallModel(s):
-    Ax = s + "Response"
-    return Ax
-
-
 
 class GetAIresponseView(APIView):
+
+    def save_not_case_data(self, user, conversation_id, message_content):
+        not_case_data = {
+            'user': user,
+            'Conversations': conversation_id,
+            'type': 'Unrecognized Pattern',
+            'message': message_content
+        }
+        not_case_instance = notCase(**not_case_data)
+        not_case_instance.save()
+
     def post(self, request, conversation_id):
         # Check if the user is authenticated
         token = request.COOKIES.get('jwt')
@@ -275,6 +281,8 @@ class GetAIresponseView(APIView):
             message_contentAIResponse = 'Based on My Training I see that the Second Party is the Winner'
         else:
             message_contentAIResponse = 'That\'s not a Legal case please send me a Legal Case'
+            self.save_not_case_data(user,conversation_id,message_content)
+
 
         # Save the message data
         message_data = {

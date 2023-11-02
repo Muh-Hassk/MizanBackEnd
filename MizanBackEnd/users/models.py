@@ -27,3 +27,10 @@ class Messages(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
     Conversations = models.ForeignKey(Conversations, on_delete=models.CASCADE, related_name='messages_set')
+
+
+class notCase(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    Conversations = models.CharField(max_length=20)
+    type = models.CharField(max_length=20)
+    message = models.TextField()

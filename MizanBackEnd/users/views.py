@@ -272,7 +272,7 @@ class GetAIresponseView(APIView):
         # Load the model and make predictions
         model = JusticeClassifier('/Users/muhammedhassan/Desktop/Mizan/MizanBackEnd/MizanBackEnd/users/npl_classifier.h5',
                                   '/Users/muhammedhassan/Desktop/Mizan/MizanBackEnd/MizanBackEnd/users/tokenizer.pkl')
-        prediction = model.predict([message_content])
+        prediction = model.predict([message_content], 0.993)
 
         # Process the prediction result
         if prediction == 1:

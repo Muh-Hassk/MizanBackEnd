@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf544037-2743-4ea7-a3b9-d5d8ca50505e" name="Changes" comment="Making the Model only Response to Legal Cases with confidence and Max legal Words count and min Legal words Count">
+    <list default="true" id="cf544037-2743-4ea7-a3b9-d5d8ca50505e" name="Changes" comment="Creating the NotCaseModel, Serializer, Views to store any Message that is not a Case in the Data Base to be Handled Offline">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MizanBackEnd/users/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/MizanBackEnd/users/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MizanBackEnd/users/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/MizanBackEnd/users/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MizanBackEnd/users/NLP_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/MizanBackEnd/users/NLP_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MizanBackEnd/users/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/MizanBackEnd/users/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -87,7 +86,14 @@
       <option name="project" value="LOCAL" />
       <updated>1698828746821</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Creating the NotCaseModel, Serializer, Views to store any Message that is not a Case in the Data Base to be Handled Offline">
+      <created>1698902395761</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1698902395761</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -105,6 +111,7 @@
     <MESSAGE value="Finally Linked with AI" />
     <MESSAGE value="Making the Model only Response to Legal Cases" />
     <MESSAGE value="Making the Model only Response to Legal Cases with confidence and Max legal Words count and min Legal words Count" />
-    <option name="LAST_COMMIT_MESSAGE" value="Making the Model only Response to Legal Cases with confidence and Max legal Words count and min Legal words Count" />
+    <MESSAGE value="Creating the NotCaseModel, Serializer, Views to store any Message that is not a Case in the Data Base to be Handled Offline" />
+    <option name="LAST_COMMIT_MESSAGE" value="Creating the NotCaseModel, Serializer, Views to store any Message that is not a Case in the Data Base to be Handled Offline" />
   </component>
 </project>
